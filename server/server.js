@@ -9,7 +9,7 @@ app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
 // Routes
-app.use(require('./routes/usuario'));
+app.use(require('./routes/index'));
 
 // Connect to mongoDB
 mongoose.connect( process.env.URLDB, {

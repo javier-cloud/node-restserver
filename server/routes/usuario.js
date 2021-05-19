@@ -5,7 +5,9 @@ const app = express();
 const bcrypt = require('bcrypt');
 const _ = require('underscore');
 
-app.get("/usuario", (req, res) => {
+const { verificaToken, verificaAdmin_Role } = require('../middlewares/authentication');
+
+app.get("/usuario", verificaToken, (req, res) => {
 
     let desde = Number(req.query.desde) || 0;
     let perPage = Number(req.query.limite) || 5;
@@ -34,7 +36,7 @@ app.get("/usuario", (req, res) => {
 
 });
 
-app.post('/usuario', (req, res) => {
+app.post('/usuario', [verificaToken, verificaAdmin_Role], (req, res) => {
 
     let body = req.body;
 
@@ -61,8 +63,8 @@ app.post('/usuario', (req, res) => {
     });
 });
 
-app.put('/usuario/:id', (req, res) => {
-    // password ni google se desean poder actulizar
+app.put('/usuario/:id', [verificaToken, verificaAdmin_Role], (req, res) => {
+    // password ni google se desean poder actualizar
     let id = req.params.id;
     let body = _.pick(req.body, ['nombre', 'email', 'img', 'role', 'estado']);
 
@@ -71,7 +73,7 @@ app.put('/usuario/:id', (req, res) => {
         delete body.google;
     */
 
-    Usuario.findByIdAndUpdate(id, body, {new: true, runValidators: true}, (err, usuarioDB) => {
+    Usuario.findByIdAndUpdate(id, body, {new: true, runValidators: true, context: 'query'}, (err, usuarioDB) => {
         
         if (err) {
             return res.status(400).json({
@@ -88,7 +90,7 @@ app.put('/usuario/:id', (req, res) => {
 
 });
 
-app.delete('/usuario/:id', (req, res) => {
+app.delete('/usuario/:id', [verificaToken, verificaAdmin_Role], (req, res) => {
     
     let id = req.params.id;
 
@@ -117,7 +119,7 @@ app.delete('/usuario/:id', (req, res) => {
 
 });
 
-app.delete('/disable/:id', (req, res) => {
+app.delete('/disable/:id', [verificaToken, verificaAdmin_Role], (req, res) => {
     let id = req.params.id;
 
     Usuario.findByIdAndUpdate(id, {estado: false}, {new: true}, (err, userDisable) => {
